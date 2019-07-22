@@ -23,8 +23,29 @@ public class Channel {
             threadPool[i] = new WorkerThread("Worker-"+i,this);
         }
     }
+    public void startWorkers(){
+        for (int i = 0; i < threadPool.length; i++) {
+            threadPool[i].start();
+        }
+    }
 
-    public  Request takerequest() {
+    public synchronized void putRequest(Request request){
+        while(count>=requestQueue.length){
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            requestQueue[tail] = request;
+            tail = (tail+1)%requestQueue.length;
+            count++;
+            notifyAll();
+        }
+    }
+
+
+    public synchronized   Request takeRequest() {
         while (count<=0){
             try {
                 wait();
